@@ -1,6 +1,6 @@
 # (ideally) minimal pyspark/jupyter notebook
 
-FROM rbaya/spark-cluster:2.4.5
+FROM quay.io/rbaya/spark-cluster:2.4.5
 
 USER root
 
