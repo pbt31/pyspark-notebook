@@ -1,6 +1,6 @@
 # (ideally) minimal pyspark/jupyter notebook
 
-FROM radanalyticsio/openshift-spark:2.4.5-latest
+FROM rbaya/spark-cluster:2.4.5
 
 USER root
 
