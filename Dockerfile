@@ -13,9 +13,14 @@ ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 ENV PYTHONIOENCODING UTF-8
 ENV CONDA_DIR /opt/conda
-ENV NB_USER=nbuser
+ENV NB_USER=jovyan
 ENV NB_UID=1011
 ENV NB_PYTHON_VER=2.7
+ENV NB_PREFIX /
+ENV PATH /opt/conda/bin:$PATH
+ENV SPARK_HOME /opt/spark
+
+EXPOSE 8888
 
 # Python binary and source dependencies
 RUN yum install -y curl wget java-headless bzip2 gnupg2 sqlite3 \
@@ -52,21 +57,17 @@ RUN yum install -y curl wget java-headless bzip2 gnupg2 sqlite3 \
     && conda remove --quiet --yes --force qt pyqt \
     && conda remove --quiet --yes --force --feature mkl ; conda clean -tipsy
 
-
-ENV PATH /opt/conda/bin:$PATH
-
-ENV SPARK_HOME /opt/spark
-
-# Add a notebook profile.
-
-RUN mkdir /notebooks && chown $NB_UID:root /notebooks && chmod 1777 /notebooks
-
-EXPOSE 8888
-
 RUN mkdir -p -m 700 /home/$NB_USER/.jupyter/ && \
-    echo "c.NotebookApp.ip = '*'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.ip = '0.0.0.0'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
     echo "c.NotebookApp.open_browser = False" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.notebook_dir = '/notebooks'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.notebook_dir = '/home/jovyan'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.allow_root = True" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.port = 8888" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.token = ''" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.password = ''" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.allow_origin = '*'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.base_url = '$NB_PREFIX'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
+    
     chown -R $NB_UID:root /home/$NB_USER && \
     chmod g+rwX,o+rX -R /home/$NB_USER
 
@@ -84,7 +85,7 @@ RUN chmod +x /tini /start.sh
 
 ENV HOME /home/$NB_USER
 USER $NB_UID
-WORKDIR /notebooks
+WORKDIR /home/jovyan
 
 ENTRYPOINT ["/tini", "--"]
 
